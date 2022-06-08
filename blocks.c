@@ -5,32 +5,61 @@
 #define BSIZE 8000
 
 typedef struct block {
-    FILE* block;
-    char bid[20];
+    FILE* data;
+    char bid[15];
     struct block* next;
 } BLOCK;
 
+typedef struct header {
+    BLOCK* start;
+    int offset;
+    FILE* schema;
+} HEADER;
+
 BLOCK* newBlock() {
     BLOCK* newBlock = (BLOCK *) malloc(sizeof(BLOCK));
-    strcpy(newBlock->bid, "Hello.bin\0");
+    snprintf(newBlock->bid, 16, "%p\n", newBlock);
+    newBlock->data = fopen(newBlock->bid, "w");
+    fclose(newBlock->data);
     newBlock->next = NULL;
     return newBlock;
 }
 
+//get more disk space
+void appendBlock(int nBlocks) {
+    ;
+}
+
+//add data, keep ordered
+void writeBlock(char* toWrite, BLOCK* block) {
+    fopen(block->bid, "w");
+    fwrite(toWrite, 1, sizeof(toWrite), block->data);
+    fclose(block->data);
+}
+
+void rmBlock(BLOCK* block) {
+    free(block);
+}
+
+void rmContent(char* content) {
+    free(content);
+}
+
 char* open(BLOCK* block) {
     char* content = (char*) malloc(sizeof(char[BSIZE]));
-    block->block = fopen("hi.bin", "w");
+    block->data = fopen(block->bid, "r");
     
-    if (block->block == NULL) {
+    if (block->data == NULL) {
         printf("file creation error");
     }
-    fread(content, 1, BSIZE, block->block);
-    fclose(block->block);
+    fread(content, 1, BSIZE, block->data);
+    fclose(block->data);
     return content;
 }
 
 int main() {
     BLOCK* one = newBlock();
-    char* print = open(one);
-    
+    writeBlock("Hi there\n", one);
+    char* data = open(one);
+    printf("%s\n", data);
 }
