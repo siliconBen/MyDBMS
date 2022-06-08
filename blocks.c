@@ -83,13 +83,29 @@ unsigned char* open(BLOCK* block) {
     return content;
 }
 
-int main() {
-    HEADER* head = newHeader();
-    appendBlock(10, head);
-    BLOCK* probe;
-    for (probe=head->start; probe != NULL; probe = probe->next) {
-        writeBlock("Hi there\n", probe);
-        char* data = open(probe);
-        printf("%s\n", data);
+BLOCK* buildBlockList() {
+    char blockListStart[15];
+    FILE* boot;
+    BLOCK* start;
+
+    boot = fopen("bootstrap.bin", "r");
+    fgets(blockListStart, 15, boot);
+    fclose(boot);
+
+    if (strcmp(blockListStart, "") == 0) {
+        printf("no boot ptr\n");
+
+        boot = fopen("bootstrap.bin", "w");
+        start = newBlock();
+        snprintf(blockListStart, 16, "%p\n", start);
+        fwrite(blockListStart, 1, sizeof(blockListStart), boot);
+        fclose(boot);
+
+        return start;
     }
+    fclose(boot);
+}
+
+int main() {
+    buildBlockList();
 }
