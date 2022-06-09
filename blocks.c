@@ -103,6 +103,7 @@ void writeBlock(unsigned char* toWrite, BLOCK* block) {
     fopen(block->bid, "w");
     fwrite(toWrite, 1, BSIZE, block->data);
     fclose(block->data);
+    free(toWrite);
 }
 
 void freeBlock(BLOCK* block) {
