@@ -125,20 +125,7 @@ BLOCK* buildBlockList() {
         head = newBlock();
     }
     else {
-        printf("here");
         head = unpackBlocks(1);
     }
     return head;
-}
-
-int main() {
-    
-    BLOCK* one = buildBlockList();
-    newBlock();
-    newBlock();
-    newBlock();
-
-    //char* helloworld = open(four);
-    //helloworld = "hello world, this will mess up the links on disk but hey ho";
-    //writeBlock(helloworld, four);
 }
