@@ -43,7 +43,7 @@ HEADER* unpackHeaders() {
     HEADER* headers = (HEADER*) malloc(sizeof(HEADER[2]));
 
     for (int i = 0; i<2; i++) {
-        headers->
+        ;
     }
     return header
 }
