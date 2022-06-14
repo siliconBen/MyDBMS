@@ -90,20 +90,26 @@ BLOCK* unpackBlocks(int id) {
     }
 }
 
-//write new data to block, be careful preserving first 16 bytes
-void writeBlock(char* toWrite, BLOCK* block) {
+//write new data to block, be careful preserving first 8 bytes
+void writeBlock(BLOCK* block, char* toWrite) {
     block->data = fopen(block->fileName, "wb");
-    fwrite(toWrite, 1, BSIZE, block->data);
+    //preserve the block metadata at start of file
+    fwrite(&block->bid, sizeof(int), 1, block->data);
+    if (block->next != NULL) {
+        fwrite(&block->next->bid, sizeof(int), 1, block->data);
+    }
+    else {
+        fwrite(&minusOne, sizeof(int), 1, block->data);
+    }
+
+    //write new data to rest of block
+    fwrite(toWrite, 1, strlen(toWrite)+1, block->data);
+
     fclose(block->data);
-    free(toWrite);
 }
 
 void freeBlock(BLOCK* block) {
     free(block);
-}
-
-void freeContent(char* content) {
-    free(content);
 }
 
 char* openBlock(BLOCK* block) {
