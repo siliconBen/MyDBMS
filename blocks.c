@@ -10,9 +10,11 @@ typedef struct block {
     int bid;
     //char bid[9];
     char fileName[17];
+    size_t freeSpace;
     struct block* next;
 } BLOCK;
 
+BLOCK* start;
 BLOCK* end;
 const int minusOne = -1;
 
@@ -54,6 +56,9 @@ BLOCK* newBlock() {
 
     fwrite(&minusOne, sizeof(int), 1, newBlock->data);
 
+    newBlock->freeSpace = BSIZE - 8 - sizeof(size_t);
+    fwrite(&newBlock->freeSpace, sizeof(size_t), 1, newBlock->data);
+
     fclose(newBlock->data);
 
     newBlock->next = NULL;
@@ -64,6 +69,9 @@ BLOCK* newBlock() {
 //read blocks on disk into memory data structure (list)
 BLOCK* unpackBlocks(int id) {
     BLOCK* newBlock = (BLOCK *) malloc(sizeof(BLOCK));
+    if (id == 1) {
+        start = newBlock;
+    }
     //printf("passed id\n%ld\n", id);
     sprintf(newBlock->fileName, "%d", id);
     newBlock->data = fopen(newBlock->fileName, "r");
@@ -75,6 +83,10 @@ BLOCK* unpackBlocks(int id) {
     //read next 8bytes for next id
     int isNull;
     fread(&isNull, sizeof(int), 1, newBlock->data);
+
+    //read in freeSpace
+    fread(&newBlock->freeSpace, sizeof(size_t), 1, newBlock->data);
+
     fclose(newBlock->data);
     printf("next id on disk\n%d\n", isNull);
 
@@ -104,6 +116,8 @@ void writeBlock(BLOCK* block, char* toWrite) {
 
     //write new data to rest of block
     fwrite(toWrite, 1, strlen(toWrite)+1, block->data);
+    //update freespace
+    block->freeSpace = block->freeSpace - (strlen(toWrite)+1);
 
     fclose(block->data);
 }
@@ -134,4 +148,41 @@ BLOCK* buildBlockList() {
         head = unpackBlocks(1);
     }
     return head;
+}
+
+
+BLOCK* smallestBlock(BLOCK* head, size_t minSpace) {
+    BLOCK* probe = head;
+    BLOCK* currentSmallest = head;
+
+    for (probe; probe->next != NULL; probe = probe->next) {
+        if (probe->freeSpace < currentSmallest->freeSpace) {
+            currentSmallest = probe;
+        }
+    }
+
+    if (currentSmallest == head && head->freeSpace<minSpace) {
+        return NULL;
+    }
+    else {
+        return currentSmallest;
+    }
+
+}
+
+BLOCK* blockByID(int bid) {
+    BLOCK* probe = start;
+
+    int i = 1;
+    for(probe; probe->next != NULL; probe = probe->next) {
+        if (i == bid) {
+            return probe;
+        }
+        i++;
+    }
+    return NULL;
+}
+
+size_t findEOF(BLOCK* block) {
+
 }
