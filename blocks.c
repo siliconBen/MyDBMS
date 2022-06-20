@@ -77,7 +77,6 @@ BLOCK* unpackBlocks(int id) {
     newBlock->data = fopen(newBlock->fileName, "r");
     //read first 8bytes for id
     fread(&newBlock->bid, sizeof(int), 1, newBlock->data);
-    printf("id in mem\n%d\n", newBlock->bid);
     //check id and bid match
 
     //read next 8bytes for next id
@@ -88,7 +87,6 @@ BLOCK* unpackBlocks(int id) {
     fread(&newBlock->freeSpace, sizeof(size_t), 1, newBlock->data);
 
     fclose(newBlock->data);
-    printf("next id on disk\n%d\n", isNull);
 
     //if null, return block
     if (isNull == -1) {
@@ -115,11 +113,12 @@ void writeBlock(BLOCK* block, char* toWrite) {
     }
 
     //write new data to rest of block
-    fwrite(toWrite, 1, strlen(toWrite)+1, block->data);
+    fwrite(toWrite, 1, BSIZE, block->data);
     //update freespace
     block->freeSpace = block->freeSpace - (strlen(toWrite)+1);
 
     fclose(block->data);
+    free(toWrite);
 }
 
 void freeBlock(BLOCK* block) {
